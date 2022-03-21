@@ -197,3 +197,110 @@ This allows us to compare two cases from the same enum using <, >, and similar.
 
 ## Swift 5.4
 
+### Multiple variadic parameters in functions
+SE-0284 introduced the ability to have functions, subscripts, and initializers use multiple variadic parameters as long as all parameters that follow a variadic parameter have labels. Before Swift 5.4, you could only have one variadic parameter in this situation.
+
+```swift
+  func summarizeGoals(times: Int..., players: String...) {
+    let joinedNames = ListFormatter.localizedString(byJoining: players)
+    let joinedTimes = ListFormatter.localizedString(byJoining: times.map(String.init))
+
+    print("\(times.count) goals where scored by \(joinedNames) at the follow minutes: \(joinedTimes)")
+  }
+
+  summarizeGoals(times: 18, 33, 55, 90, players: "Dani", "Jamie", "Roy")
+```
+
+## Swift 5.5
+
+### Async/await + Actors
+SE-0296 introduces asynchronous (async) functions into Swift, allowing us to run complex asynchronous code almost is if it were synchronous. 
+This is done in two steps: marking async functions with the new async keyword, then calling them using the await keyword, similar to other languages such as C# and JavaScript.
+
+To see how async/await helps the language, it’s helpful to look at how we solved the same problem previously. 
+Completion handlers are commonly used in Swift code to allow us to send back values after a function returns, but they had tricky syntax as you’ll see.
+
+```swift
+  // TODO: - Replace link with Swift code
+  https://www.hackingwithswift.com/articles/233/whats-new-in-swift-5-5
+```
+## Swift 5.6
+
+### Introduce existential any
+SE-0335 introduces a new any keyword to mark existential types, and although that might sound esoteric please don’t skip ahead: this one is a big change, and is likely to break a lot of Swift code in future versions.
+
+```swift
+  protocol Vehicle {
+    func travel(to destination: String)
+  }
+
+  struct Car: Vehicle {
+      func travel(to destination: String) {
+          print("I'm driving to \(destination)")
+      }
+  }
+
+  let vehicle = Car()
+  vehicle.travel(to: "London")
+
+  func travel<T: Vehicle>(to destinations: [String], using vehicle: T) {
+      for destination in destinations {
+          vehicle.travel(to: destination)
+      }
+  }
+
+  travel(to: ["London", "Amarillo"], using: vehicle)
+
+  let vehicle2: Vehicle = Car()
+  vehicle2.travel(to: "Glasgow")
+
+  func travel2(to destinations: [String], using vehicle: Vehicle) {
+      for destination in destinations {
+          vehicle.travel(to: destination)
+      }
+  }
+
+  let vehicle3: any Vehicle = Car()
+  vehicle3.travel(to: "Glasgow")
+
+  func travel3(to destinations: [String], using vehicle: any Vehicle) {
+      for destination in destinations {
+          vehicle.travel(to: destination)
+      }
+  }
+```
+
+### Type placeholders
+SE-0315 introduces the concept of type placeholders, which allow us to explicitly specify only some parts of a value’s type so that the remainder can be filled in using type inference.
+
+In practice, this means writing _ as your type in any place you want Swift to use type inference, meaning that these three lines of code are the same:
+
+```swift
+  let score1 = 5
+  let score2: Int = 5
+  let score3: _ = 5
+
+  var results3: [_: [Int]] = [
+      "Cynthia": [],
+      "Jenny": [],
+      "Trixie": [],
+  ]
+
+  struct Player<T: Numeric> {
+    var name: String
+    var score: T
+  }
+
+  func createPlayer() -> _ {
+      Player(name: "Anonymous", score: 0)
+  }
+```
+
+### Unavailability condition
+
+```swift
+  if #unavailable(iOS 15) {
+    // Code to make iOS 14 and earlier work correctly
+  }
+```
+
